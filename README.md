@@ -21,6 +21,13 @@
 - **Smart Geometric Closure:** Transforms open line paths into pure convex or concave hulls by seamlessly connecting the last captured pin back to the first.
 - **Professional Export:** High-resolution (2x) PNG export with a 100% transparent background, ideal for use in other graphic design workflows.
 
+## Demo
+
+<p align="center">
+  <img src="assets/demo.gif" alt="Animation demonstrating a taut string being woven through a grid of circular pins, forming a smooth convex shape" />
+</p>
+<p align="center"><em>Weaving a string through the pin grid to create an organic convex hull</em></p>
+
 ## How the idea was born 
 
 The concept emerged from the foundational "dot and line" exercises detailed in the early chapters of Armin Hofmann's *Graphic Design Manual* (1965). Specifically, Hofmann explores the relationship between points in a grid (often a four-by-four dot matrix) and how lines connect them to create organic movement and unified forms. In the pedagogical tradition of the Basel School of Design, these theories were often translated into tactile, analog exercises where students used physical pins and taut threads on a board to understand tension, negative space, and continuous curves. This project was born as an experiment to digitally recreate that exact analog constraint—translating the real-world resistance and tension of a thread into a dynamic, browser-based tool.
