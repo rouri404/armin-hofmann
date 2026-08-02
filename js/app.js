@@ -4,7 +4,7 @@
     const CANVAS_SIZE = 600;          // Internal canvas resolution
     const MAX_PIN_RADIUS = 40;        // Max pin radius (px)
     const MIN_PIN_GAP = 12;           // Min gap between adjacent pin edges
-    const CLOSURE_THRESHOLD = 30;     // Distance to auto-close loop
+    const CLOSURE_THRESHOLD = 45;     // Distance to auto-close loop
     const MIN_PINS_TO_CLOSE = 1;      // Min captured pins before closure
     const MIN_TRAVEL_TO_CLOSE = 100;  // Min path travel before closure (px)
 
@@ -279,16 +279,19 @@
 
     function buildGrid() {
       pins = [];
-      const cellW = CANVAS_SIZE / cols;
-      const cellH = CANVAS_SIZE / rows;
+      const size = Math.min(canvasOp.width, canvasOp.height) || CANVAS_SIZE;
+      const cellW = size / cols;
+      const cellH = size / rows;
+      const offsetX = (canvasOp.width - size) / 2;
+      const offsetY = (canvasOp.height - size) / 2;
 
       const minSpacing = Math.min(cellW, cellH);
       pinRadius = Math.min(Math.floor((minSpacing - MIN_PIN_GAP) / 2), MAX_PIN_RADIUS);
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-          const cx = c * cellW + cellW / 2;
-          const cy = r * cellH + cellH / 2;
+          const cx = offsetX + c * cellW + cellW / 2;
+          const cy = offsetY + r * cellH + cellH / 2;
           pins.push({
             id: r + '-' + c,
             x: cx,
@@ -473,7 +476,8 @@
       completedShapes.push(segments);
 
       const shapeArea = calculateArea(segments);
-      const totalArea = CANVAS_SIZE * CANVAS_SIZE;
+      const size = Math.min(canvasOp.width, canvasOp.height) || CANVAS_SIZE;
+      const totalArea = size * size;
       const pct = (shapeArea / totalArea * 100).toFixed(1);
       elArea.textContent = 'Area: ' + pct + '% of canvas';
 
@@ -572,7 +576,8 @@
     function onExport() {
       if (completedShapes.length === 0) return;
 
-      const exportSize = CANVAS_SIZE * 2;
+      const size = Math.min(canvasOp.width, canvasOp.height) || CANVAS_SIZE;
+      const exportSize = size * 2;
       const exportCanvas = document.createElement('canvas');
       exportCanvas.width = exportSize;
       exportCanvas.height = exportSize;
@@ -580,6 +585,7 @@
 
       exportCtx.save();
       exportCtx.scale(2, 2);
+      exportCtx.translate(-((canvasOp.width - size) / 2), -((canvasOp.height - size) / 2));
       for (const shape of completedShapes) {
         drawPathOnCtx(exportCtx, shape, null, COLORS.shape);
       }
@@ -668,14 +674,14 @@
     }
 
     function renderResultCanvas() {
-      ctxRes.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      ctxRes.clearRect(0, 0, canvasRes.width, canvasRes.height);
       for (const shape of completedShapes) {
         drawPathOnCtx(ctxRes, shape, null, COLORS.shape);
       }
     }
 
     function render() {
-      ctxOp.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      ctxOp.clearRect(0, 0, canvasOp.width, canvasOp.height);
 
       for (const pin of pins) {
         ctxOp.beginPath();
@@ -699,19 +705,55 @@
       requestAnimationFrame(render);
     }
 
+    function resizeCanvases() {
+      const panelOp = document.getElementById('panel-op');
+      const panelRes = document.getElementById('panel-res');
+      const wrapOpEl = document.getElementById('wrap-op');
+      const wrapResEl = document.getElementById('wrap-res');
+      if (panelOp && panelRes && wrapOpEl && wrapResEl) {
+        const h2Op = panelOp.querySelector('h2');
+        const h2Res = panelRes.querySelector('h2');
+        const isMobile = window.innerWidth <= 960;
+        const availH = panelOp.clientHeight - (h2Op ? h2Op.offsetHeight + 12 : 35);
+        const availW = panelOp.clientWidth;
+        const sqSize = isMobile
+          ? Math.max(260, availW)
+          : Math.max(200, Math.min(availW, availH));
+
+        if (h2Op) h2Op.style.width = sqSize + 'px';
+        if (h2Res) h2Res.style.width = sqSize + 'px';
+
+        wrapOpEl.style.width = sqSize + 'px';
+        wrapOpEl.style.height = sqSize + 'px';
+        wrapResEl.style.width = sqSize + 'px';
+        wrapResEl.style.height = sqSize + 'px';
+
+        canvasOp.width = sqSize;
+        canvasOp.height = sqSize;
+        canvasRes.width = sqSize;
+        canvasRes.height = sqSize;
+      }
+    }
+
     function init() {
+      resizeCanvases();
+      window.addEventListener('resize', () => {
+        resizeCanvases();
+        buildGrid();
+        renderResultCanvas();
+      });
 
       buildGrid();
 
-      canvasOp.addEventListener('mousedown',  handleStart);
-      canvasOp.addEventListener('mousemove',  handleMove);
-      canvasOp.addEventListener('mouseup',    handleEnd);
-      canvasOp.addEventListener('mouseleave', handleEnd);
+      wrapOp.addEventListener('mousedown',  handleStart);
+      wrapOp.addEventListener('mousemove',  handleMove);
+      wrapOp.addEventListener('mouseup',    handleEnd);
+      wrapOp.addEventListener('mouseleave', handleEnd);
 
-      canvasOp.addEventListener('touchstart', handleStart, { passive: false });
-      canvasOp.addEventListener('touchmove',  handleMove,  { passive: false });
-      canvasOp.addEventListener('touchend',   handleEnd,   { passive: false });
-      canvasOp.addEventListener('touchcancel',handleEnd,   { passive: false });
+      wrapOp.addEventListener('touchstart', handleStart, { passive: false });
+      wrapOp.addEventListener('touchmove',  handleMove,  { passive: false });
+      wrapOp.addEventListener('touchend',   handleEnd,   { passive: false });
+      wrapOp.addEventListener('touchcancel',handleEnd,   { passive: false });
 
       inputRows.addEventListener('change', onGridChange);
       inputCols.addEventListener('change', onGridChange);
