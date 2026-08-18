@@ -38,6 +38,6 @@ It allows the creation of perfectly smooth, filled shapes by weaving a line ("st
 
 The application is fully hosted and ready to use in your browser. 
 
-👉 **[Access Physical Winding Live](https://rouri404.github.io/armin-hofmann/)**
+👉 **[Access Physical Winding Live](https://winding.cotoo.dev)**
 
 Since this is a purely **Vanilla** application, there are no build processes required. If you wish to contribute or run it locally, simply clone the repository and open `index.html` directly.
